@@ -1,35 +1,43 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import path from "node:path";
-import Store from "electron-store";
-const store = new Store();
+import { clearURL, getHAURL, getWindowBounds, saveURL, saveWindowBounds, showMainWindow, showTaskBar, toggleAutostart, toggleTaskBar } from "./functions";
 
 const indexPath = path.join(__dirname, "index.html");
 
+let allowQuit = false;
+
 // Create browserwindow, open homeassitant page
 const createWindow = () => {
-	//@ts-ignore
-	const bounds = store.get("windowBounds") || { width: 800, height: 600 };
+	const bounds = getWindowBounds();
 
 	const mainWindow = new BrowserWindow({
 		...bounds,
 		autoHideMenuBar: true,
+		skipTaskbar: showTaskBar(),
 		title: "Home-",
 		webPreferences: {
 			preload: path.join(__dirname, "preload.js"),
 		},
 	});
 
-	// Check if homeassitant address is set, otherwise request it before opening page
-	// @ts-ignore
-	const url = store.get("URL");
+	mainWindow.on("close", function (event) {
+		if (!allowQuit) {
+			event.preventDefault();
+			mainWindow.hide();
+		}
 
+		return false;
+	});
+
+	const url = getHAURL();
+
+	// Check if homeassitant address is set, otherwise request it before opening page
 	if (!url) mainWindow.loadFile(indexPath);
 	else mainWindow.loadURL(url);
 
+	// Save window location on close
 	mainWindow.on("close", () => {
-		//@ts-ignore
-		store.set("windowBounds", mainWindow.getBounds());
+		saveWindowBounds(mainWindow);
 	});
 };
 
@@ -41,50 +49,40 @@ app.whenReady().then(() => {
 	const trayIconPath = path.join(__dirname, "logo.png");
 	const trayIcon = nativeImage.createFromPath(trayIconPath);
 	tray = new Tray(trayIcon);
+	tray.on("click", () => showMainWindow());
+
 	const contextMenu = Menu.buildFromTemplate([
 		{
+			label: "Show",
+			click: showMainWindow,
+		},
+		{
 			label: "Clear URL",
-			type: "normal",
-			click: function () {
-				//@ts-ignore
-				store.set("URL", null);
-				if (BrowserWindow.getAllWindows()[0]) BrowserWindow.getAllWindows()[0].loadFile(indexPath);
-			},
+			click: clearURL,
 		},
 		{
 			label: "Toggle autostart",
-			type: "normal",
-			click: function () {
-				//@ts-ignore
-				const start = store.get("autostart");
-				if (!start) {
-					console.log("Enabled autostart");
-					app.setLoginItemSettings({
-						openAtLogin: true,
-					});
-
-					//@ts-ignore
-					store.set("autostart", true);
-				} else {
-					console.log("Disabled autostart");
-
-					app.setLoginItemSettings({
-						openAtLogin: false,
-					});
-					//@ts-ignore
-					store.set("autostart", false);
-				}
+			click: toggleAutostart,
+		},
+		{
+			label: "Toggle taskbar icon",
+			click: toggleTaskBar,
+		},
+		{
+			label: "Quit",
+			click: () => {
+				allowQuit = true;
+				app.quit();
 			},
 		},
 	]);
+
 	tray.setToolTip("Home-");
 	tray.setContextMenu(contextMenu);
 
 	// Wait and handle a request to update url
 	ipcMain.on("setUrl", (e, url: string) => {
-		// Save URL
-		// @ts-ignore
-		store.set("URL", url);
+		saveURL(url);
 
 		// Open new URL
 		BrowserWindow.getAllWindows()[0].loadURL(url);
