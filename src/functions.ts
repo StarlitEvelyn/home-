@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-nocheck
 import { BrowserWindow } from "electron";
-import store from "./storage";
 
 const showMainWindow = () => {
 	try {
@@ -11,34 +10,34 @@ const showMainWindow = () => {
 	}
 };
 
-const clearURL = () => {
+const clearURL = (store) => {
 	store.set("URL", null);
 	if (BrowserWindow.getAllWindows()[0]) BrowserWindow.getAllWindows()[0].loadFile(indexPath);
 };
 
-const saveURL = (url) => {
+const saveURL = (url, store) => {
 	store.set("URL", url);
 };
 
-const getWindowBounds = () => {
+const getWindowBounds = (store) => {
 	return store.get("windowBounds") || { width: 800, height: 600 };
 };
 
-const saveWindowBounds = (mainWindow) => {
-	store.set("windowBounds", mainWindow.getBounds());
+const saveWindowBounds = (mainWindow, store) => {
+	if (mainWindow) store.set("windowBounds", mainWindow.getBounds());
 };
 
-const showTaskBar = () => {
+const showTaskBar = (store) => {
 	return store.get("taskbar") ?? false;
 };
 
-const toggleTaskBar = () => {
+const toggleTaskBar = (store) => {
 	const taskbar = store.get("taskbar");
 	if (taskbar) store.set("taskar", false);
 	else store.set("taskbar", true);
 };
 
-const toggleAutostart = () => {
+const toggleAutostart = (store) => {
 	const start = store.get("autostart");
 	if (!start) {
 		// Enable autostart
@@ -59,7 +58,7 @@ const toggleAutostart = () => {
 	}
 };
 
-const getHAURL = () => {
+const getHAURL = (store) => {
 	return store.get("URL") ?? null;
 };
 
