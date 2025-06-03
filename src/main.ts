@@ -1,21 +1,18 @@
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import path from "node:path";
 import { clearURL, getHAURL, getWindowBounds, saveURL, saveWindowBounds, showMainWindow, showTaskBar, toggleAutostart, toggleTaskBar } from "./functions";
-import Store from "electron-store";
-const store = new Store();
-
 const indexPath = path.join(__dirname, "index.html");
 
 let allowQuit = false;
 
 // Create browserwindow, open homeassitant page
 const createWindow = () => {
-	const bounds = getWindowBounds(store);
+	const bounds = getWindowBounds();
 
 	const mainWindow = new BrowserWindow({
 		...bounds,
 		autoHideMenuBar: true,
-		skipTaskbar: showTaskBar(store),
+		skipTaskbar: showTaskBar(),
 		title: "Home-",
 		webPreferences: {
 			preload: path.join(__dirname, "preload.js"),
@@ -31,7 +28,7 @@ const createWindow = () => {
 		return false;
 	});
 
-	const url = getHAURL(store);
+	const url = getHAURL();
 
 	// Check if homeassitant address is set, otherwise request it before opening page
 	if (!url) mainWindow.loadFile(indexPath);
@@ -39,7 +36,7 @@ const createWindow = () => {
 
 	// Save window location on close
 	mainWindow.on("close", () => {
-		saveWindowBounds(mainWindow, store);
+		saveWindowBounds(mainWindow);
 	});
 };
 
@@ -84,7 +81,7 @@ app.whenReady().then(() => {
 
 	// Wait and handle a request to update url
 	ipcMain.on("setUrl", (e, url: string) => {
-		saveURL(url, store);
+		saveURL(url);
 
 		// Open new URL
 		BrowserWindow.getAllWindows()[0].loadURL(url);
