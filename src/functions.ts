@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-nocheck
 import store from "./storage";
-import { app, BrowserWindow } from "electron";
+import { app } from "electron";
 
-const showMainWindow = () => {
+const showMainWindow = (mainWindow) => {
 	try {
-		BrowserWindow.getAllWindows()[0].show();
+		mainWindow.show();
 	} catch (e) {
 		console.log(e);
 	}
 };
 
-const clearURL = () => {
+const clearURL = (mainWindow) => {
 	const indexPath = path.join(__dirname, "index.html");
 	store.set("URL", null);
-	if (BrowserWindow.getAllWindows()[0]) BrowserWindow.getAllWindows()[0].loadFile(indexPath);
+	if (mainWindow) mainWindow.loadFile(indexPath);
 };
 
 const saveURL = (url) => {
