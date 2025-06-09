@@ -15,6 +15,7 @@ const createWindow = () => {
 		...bounds,
 		autoHideMenuBar: true,
 		skipTaskbar: showTaskBar(),
+		icon: "/images/icon.ico",
 		title: "Home-",
 		webPreferences: {
 			preload: path.join(__dirname, "preload.js"),
