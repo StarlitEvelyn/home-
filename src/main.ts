@@ -25,7 +25,7 @@ const createWindow = () => {
 	mainWindow.on("close", function (event) {
 		if (!allowQuit) {
 			event.preventDefault();
-			mainWindow.hide();
+			mainWindow.minimize();
 		}
 
 		return false;
@@ -56,6 +56,9 @@ if (!lock) {
 
 	app.whenReady().then(() => {
 		globalShortcut.register("Shift+CommandOrControl+H", () => {
+			// Minimize if focused
+			if (mainWindow.isFocused()) return mainWindow.minimize();
+			// Open and focus if minimized
 			if (mainWindow.isMinimized()) mainWindow.restore();
 			mainWindow.focus();
 		});
