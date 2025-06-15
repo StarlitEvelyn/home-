@@ -13,7 +13,7 @@ const config: ForgeConfig = {
 		icon: "/images/icon",
 	},
 	rebuildConfig: {},
-	makers: [new MakerSquirrel({}), new MakerZIP({}, ["darwin"]), new MakerRpm({}), new MakerDeb({})],
+	makers: [new MakerZIP({}, ["darwin"]), new MakerRpm({}), new MakerDeb({})],
 	plugins: [
 		new VitePlugin({
 			// `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.

@@ -2,6 +2,7 @@ import { app, BrowserWindow, globalShortcut, ipcMain, Menu, nativeImage, Tray } 
 import path from "node:path";
 import { clearURL, getHAURL, getWindowBounds, saveURL, saveWindowBounds, showMainWindow, showTaskBar, toggleAutostart, toggleTaskBar } from "./functions";
 const indexPath = path.join(__dirname, "index.html");
+const settingsPath = path.join(__dirname, "settings.html");
 
 let allowQuit = false;
 const lock = app.requestSingleInstanceLock();
@@ -9,6 +10,17 @@ let mainWindow: BrowserWindow | null = null;
 
 // Create browserwindow, open homeassitant page
 const createWindow = () => {
+	const menuTemplate = [
+		{
+			label: "Settings",
+			click() {
+				mainWindow.loadFile(settingsPath);
+			},
+		},
+	];
+
+	const menu = Menu.buildFromTemplate(menuTemplate);
+
 	const bounds = getWindowBounds();
 
 	mainWindow = new BrowserWindow({
@@ -22,6 +34,8 @@ const createWindow = () => {
 		},
 	});
 
+	Menu.setApplicationMenu(menu);
+
 	mainWindow.on("close", function (event) {
 		if (!allowQuit) {
 			event.preventDefault();
@@ -30,6 +44,8 @@ const createWindow = () => {
 
 		return false;
 	});
+
+	mainWindow.webContents.openDevTools();
 
 	const url = getHAURL();
 
